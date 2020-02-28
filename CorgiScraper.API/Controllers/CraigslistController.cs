@@ -33,6 +33,7 @@ namespace CorgiScraper.API.Controllers
         public IEnumerable<PageDetails> GetBySearchTerm(string searchTerm)
         {
             // TODO: filter out duplicate details
+            _logger.LogInformation($"Search term: {searchTerm}");
             var mainLinks = _craigslistServices.GetMainPageLinks($"https://orangecounty.craigslist.org/search/pet?query={searchTerm}");
             var lstPageDetails = _craigslistServices.GetPageDetails(mainLinks, searchTerm);
 
