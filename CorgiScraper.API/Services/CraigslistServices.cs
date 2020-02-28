@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CorgiScraper.API.Models;
 using CorgiScraper.API.Services.Interfaces;
 using HtmlAgilityPack;
@@ -50,6 +51,15 @@ namespace CorgiScraper.API.Services
                 pageDetails.Description = description.Replace("\n        \n            QR Code Link to This Post\n            \n        \n", "");
                 pageDetails.Url = url;
 
+                var imageOfInterest = htmlNode.OwnerDocument.DocumentNode.SelectSingleNode("//html/body/section/section/section/figure/div/div/div/div/img");
+                var imageUrl = "";
+                
+                if (imageOfInterest != null)
+                    imageUrl = imageOfInterest.Attributes["src"].Value;
+
+                if (!string.IsNullOrEmpty(imageUrl))
+                    pageDetails.ImageUrl = imageUrl;
+
                 // var searchTermInTitle = pageDetails.Title.ToLower().Contains(searchTerm.ToLower());
                 // var searchTermInDescription = pageDetails.Description.ToLower().Contains(searchTerm.ToLower());
 
@@ -57,7 +67,16 @@ namespace CorgiScraper.API.Services
                     lstPageDetails.Add(pageDetails);
                 // }
             }
-            return lstPageDetails;
+
+            var filteredList = FilterOutRepeatedPageDetails(lstPageDetails);
+            return filteredList;
+        }
+
+        private List<PageDetails> FilterOutRepeatedPageDetails(List<PageDetails> originalList)
+        {
+            var distinctList = originalList.GroupBy(x => x.Url).Select(x => x.First()).ToList();
+
+            return distinctList;
         }
 
         private HtmlNode GetHtml(string url) 
